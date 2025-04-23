@@ -1,0 +1,39 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="200dp"
+    android:height="200dp"
+    android:viewportWidth="200"
+    android:viewportHeight="200">
+
+    <!-- Legend Line -->
+    <path
+        android:pathData="M10,10 L190,10"
+        android:strokeColor="#6A80FF"
+        android:strokeWidth="3"
+        android:strokeLineCap="round" />
+
+    <!-- Legend Dot -->
+    <path
+        android:pathData="M100,20"
+        android:fillColor="#6A80FF"
+        android:strokeWidth="0" />
+
+    <!-- Dots -->
+    <path
+        android:pathData="M60,60"
+        android:fillColor="#6A80FF" />
+    <path
+        android:pathData="M100,100"
+        android:fillColor="#6A80FF" />
+    <path
+        android:pathData="M140,80"
+        android:fillColor="#6A80FF" />
+
+    <!-- Example connecting line -->
+    <path
+        android:pathData="M60,60 L100,100 L140,80"
+        android:strokeColor="#FF5733"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:fillColor="@android:color/transparent" />
+
+</vector>

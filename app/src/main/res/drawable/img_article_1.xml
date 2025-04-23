@@ -1,0 +1,50 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="80dp"
+    android:height="80dp"
+    android:viewportWidth="80"
+    android:viewportHeight="80">
+
+    <!-- Background -->
+    <path
+        android:pathData="M0,0h80v80h-80z"
+        android:fillColor="#F5F7FA"/>
+
+    <!-- Piggy Bank -->
+    <path
+        android:pathData="M20,48c0,8.84 7.16,16 16,16c4.42,0 8.42,-1.79 11.31,-4.69L52,64v-8.17c1.88,-2.39 3,-5.4 3,-8.67c0,-2.76 -0.8,-5.32 -2.17,-7.5C52.08,38.75 51,37.41 49.78,36.28C46.95,33.45 43.12,32 39,32S31.05,33.45 28.22,36.28C25.39,39.12 24,42.88 24,47c0,0.34 0.01,0.67 0.03,1H20V48z"
+        android:fillColor="#B388FF"/>
+
+    <!-- Piggy Features -->
+    <path
+        android:pathData="M41,44m-3,0a3,3 0,1 1,6 0a3,3 0,1 1,-6 0"
+        android:fillColor="#8E63D3"/>
+
+    <path
+        android:pathData="M34,41h-6c-1.1,0 -2,0.9 -2,2s0.9,2 2,2h6c1.1,0 2,-0.9 2,-2S35.1,41 34,41z"
+        android:fillColor="#8E63D3"/>
+
+    <!-- Coins -->
+    <path
+        android:pathData="M60,30m-10,0a10,10 0,1 1,20 0a10,10 0,1 1,-20 0"
+        android:fillColor="#FFAB40"/>
+
+    <path
+        android:pathData="M60,30m-6,0a6,6 0,1 1,12 0a6,6 0,1 1,-12 0"
+        android:fillColor="#FFC46E"/>
+
+    <path
+        android:pathData="M18,25m-8,0a8,8 0,1 1,16 0a8,8 0,1 1,-16 0"
+        android:fillColor="#FFAB40"/>
+
+    <path
+        android:pathData="M18,25m-5,0a5,5 0,1 1,10 0a5,5 0,1 1,-10 0"
+        android:fillColor="#FFC46E"/>
+
+    <path
+        android:pathData="M32,20m-6,0a6,6 0,1 1,12 0a6,6 0,1 1,-12 0"
+        android:fillColor="#FFAB40"/>
+
+    <path
+        android:pathData="M32,20m-4,0a4,4 0,1 1,8 0a4,4 0,1 1,-8 0"
+        android:fillColor="#FFC46E"/>
+</vector>
