@@ -2,13 +2,14 @@ package com.example.recehin
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
 import android.widget.Button
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 
-class HalamanLoginActivity : AppCompatActivity() {
+class HalamanLoginActivity : BaseActivity() {
 
     private lateinit var tilEmail: TextInputLayout
     private lateinit var etEmail: TextInputEditText
@@ -21,6 +22,8 @@ class HalamanLoginActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
+
+        rootView = findViewById(R.id.root_layout)
 
         // Initialize views
         tilEmail = findViewById(R.id.til_email)
