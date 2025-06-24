@@ -1,6 +1,7 @@
 package com.example.recehin
 
 import android.content.Intent
+import android.view.View
 import android.os.Bundle
 import android.widget.ImageButton
 import android.widget.TextView
@@ -8,8 +9,16 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import android.view.ViewGroup
+import android.content.res.Resources
 
-class BerandaActivity : AppCompatActivity() {
+
+
+class BerandaActivity : BaseActivity() {
+
+    override fun shouldApplyBottomInset(): Boolean = false
 
     private lateinit var tvSaldoTotal: TextView
     private lateinit var tvPemasukan: TextView
@@ -26,6 +35,8 @@ class BerandaActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_beranda)
 
+        rootView = findViewById(R.id.root_layout)
+
         // Initialize views
         tvSaldoTotal = findViewById(R.id.tv_saldo_total)
         tvPemasukan = findViewById(R.id.tv_pemasukan)
@@ -37,6 +48,7 @@ class BerandaActivity : AppCompatActivity() {
         bottomNavigation = findViewById(R.id.bottom_navigation)
         ibNotifikasi = findViewById(R.id.ib_notifikasi)
         ibProfil = findViewById(R.id.ib_profil)
+
 
         // Set dummy data for static UI
         tvSaldoTotal.text = "Rp 2.500.000"
@@ -53,7 +65,7 @@ class BerandaActivity : AppCompatActivity() {
 //        }
 
         ibProfil.setOnClickListener {
-            startActivity(Intent(this, PengaturanActivity::class.java))
+            startActivity(Intent(this, ProfilActivity::class.java))
         }
 
         // Setup bottom navigation
@@ -81,5 +93,25 @@ class BerandaActivity : AppCompatActivity() {
 
         // Set the home item as selected
         bottomNavigation.selectedItemId = R.id.nav_home
+
+        fabTambahTransaksi.post {
+            val root = findViewById<View>(android.R.id.content)
+            ViewCompat.setOnApplyWindowInsetsListener(root) { _, insets ->
+                val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+
+                val layoutParams = fabTambahTransaksi.layoutParams as ViewGroup.MarginLayoutParams
+                layoutParams.bottomMargin = systemBars.bottom + 66.dpToPx() // 16dp = your base margin
+                fabTambahTransaksi.layoutParams = layoutParams
+
+                insets
+            }
+
+            ViewCompat.requestApplyInsets(root)
+        }
     }
+
+    fun Int.dpToPx(): Int {
+        return (this * Resources.getSystem().displayMetrics.density).toInt()
+    }
+
 }

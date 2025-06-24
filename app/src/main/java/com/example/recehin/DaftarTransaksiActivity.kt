@@ -29,8 +29,14 @@ import com.google.android.material.tabs.TabLayout
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import android.view.ViewGroup
+import android.content.res.Resources
 
-class DaftarTransaksiActivity : AppCompatActivity() {
+class DaftarTransaksiActivity : BaseActivity() {
+
+    override fun shouldApplyBottomInset(): Boolean = false
 
     private lateinit var searchView: SearchView
     private lateinit var chipGroupFilter: ChipGroup
@@ -46,8 +52,25 @@ class DaftarTransaksiActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_daftar_transaksi)
 
+        rootView = findViewById(R.id.root_layout)
+
         // Initialize views
         initViews()
+
+        fabTambahTransaksi.post {
+            val root = findViewById<View>(android.R.id.content)
+            ViewCompat.setOnApplyWindowInsetsListener(root) { _, insets ->
+                val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+
+                val layoutParams = fabTambahTransaksi.layoutParams as ViewGroup.MarginLayoutParams
+                layoutParams.bottomMargin = systemBars.bottom + 66.dp // 16dp = your base margin
+                fabTambahTransaksi.layoutParams = layoutParams
+
+                insets
+            }
+
+            ViewCompat.requestApplyInsets(root)
+        }
 
         // Setup UI interactions
         setupListeners()
@@ -58,6 +81,10 @@ class DaftarTransaksiActivity : AppCompatActivity() {
         // Load dummy data
         loadDummyData()
     }
+
+    val Int.dp: Int
+        get() = (this * Resources.getSystem().displayMetrics.density).toInt()
+
 
     private fun initViews() {
         // Find all views
@@ -178,10 +205,9 @@ class DaftarTransaksiActivity : AppCompatActivity() {
     }
 
     private fun loadDummyData() {
-        // In a real app, this would populate the RecyclerView with actual data
-        // For mock purposes, we'll just display a message
-        val emptyView = findViewById<TextView>(R.id.tv_empty_state)
-        emptyView.visibility = View.GONE // Hide empty state for demo purposes
+        val dummyList = listOf("Gaji", "Makan", "Transportasi", "Investasi", "Hiburan")
+        val adapter = TransaksiAdapter(dummyList)
+        recyclerViewTransaksi.adapter = adapter
     }
 
     private fun showDateRangePickerDialog() {

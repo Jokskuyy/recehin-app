@@ -2,13 +2,14 @@ package com.example.recehin
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
 import android.widget.Button
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 
-class HalamanRegisterActivity : AppCompatActivity() {
+class HalamanRegisterActivity : BaseActivity() {
 
     private lateinit var tilNama: TextInputLayout
     private lateinit var etNama: TextInputEditText
@@ -24,6 +25,8 @@ class HalamanRegisterActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_register)
+
+        rootView = findViewById(R.id.root_layout)
 
         // Initialize views
         tilNama = findViewById(R.id.til_nama)

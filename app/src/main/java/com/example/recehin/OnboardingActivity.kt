@@ -12,10 +12,9 @@ import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.recyclerview.widget.RecyclerView
 
 
-class OnboardingActivity : AppCompatActivity() {
+class OnboardingActivity : BaseActivity() {
 
     private lateinit var viewPager: ViewPager2
     private lateinit var btnNext: Button
@@ -46,6 +45,8 @@ class OnboardingActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_onboarding)
 
+        rootView = findViewById(R.id.root_layout)
+
         viewPager = findViewById(R.id.view_pager)
         btnNext = findViewById(R.id.btn_next)
         btnSkip = findViewById(R.id.btn_skip)
@@ -53,14 +54,32 @@ class OnboardingActivity : AppCompatActivity() {
         btnRegister = findViewById(R.id.btn_register)
         tabLayout = findViewById(R.id.tab_layout)
 
+        tabLayout.tabMode = TabLayout.MODE_FIXED
+
         // Set adapter for viewpager
         val adapter = OnboardingPagerAdapter(this, onboardingPages)
         viewPager.adapter = adapter
 
         // Connect TabLayout with ViewPager2
         TabLayoutMediator(tabLayout, viewPager) { tab, position ->
-            // No title for tabs
+            tab.customView = LayoutInflater.from(this)
+                .inflate(R.layout.item_tab_dot, null, false)
         }.attach()
+
+        tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
+            override fun onTabSelected(tab: TabLayout.Tab) {
+                (tab.customView as? ImageView)?.setImageResource(R.drawable.tab_indicator_selected)
+            }
+
+            override fun onTabUnselected(tab: TabLayout.Tab) {
+                (tab.customView as? ImageView)?.setImageResource(R.drawable.tab_indicator_default)
+            }
+
+            override fun onTabReselected(tab: TabLayout.Tab) {}
+        })
+
+// Set initial selection manually
+        (tabLayout.getTabAt(0)?.customView as? ImageView)?.setImageResource(R.drawable.tab_indicator_selected)
 
         // Next button click listener
         btnNext.setOnClickListener {
@@ -110,6 +129,7 @@ class OnboardingActivity : AppCompatActivity() {
         btnLogin.visibility = View.VISIBLE
         btnRegister.visibility = View.VISIBLE
         btnNext.visibility = View.GONE
+        tabLayout.visibility = View.GONE
     }
 }
 
