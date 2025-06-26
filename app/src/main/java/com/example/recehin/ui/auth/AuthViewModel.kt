@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.recehin.data.network.request.*
 import com.example.recehin.data.network.response.*
 import com.example.recehin.data.repository.AuthRepository
+import com.example.recehin.ui.utils.SingleLiveEvent
 import kotlinx.coroutines.launch
 
 class AuthViewModel(private val repository: AuthRepository) : ViewModel() {
@@ -19,6 +20,10 @@ class AuthViewModel(private val repository: AuthRepository) : ViewModel() {
 
     private val _forgotPasswordResult = MutableLiveData<Result<ForgotPasswordResponse>>()
     val forgotPasswordResult: LiveData<Result<ForgotPasswordResponse>> = _forgotPasswordResult
+
+    // --- LIVE DATA BARU UNTUK HASIL RESET ---
+    private val _resetPasswordResult = SingleLiveEvent<Result<GeneralResponse>>()
+    val resetPasswordResult: LiveData<Result<GeneralResponse>> = _resetPasswordResult
 
     private val _isLoading = MutableLiveData<Boolean>()
     val isLoading: LiveData<Boolean> = _isLoading
@@ -59,6 +64,21 @@ class AuthViewModel(private val repository: AuthRepository) : ViewModel() {
                 _forgotPasswordResult.postValue(Result.success(response))
             } catch (e: Exception) {
                 _forgotPasswordResult.postValue(Result.failure(e))
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
+
+    // --- FUNGSI BARU UNTUK MENJALANKAN RESET PASSWORD ---
+    fun resetPassword(request: ResetPasswordRequest) {
+        _isLoading.value = true
+        viewModelScope.launch {
+            try {
+                val response = repository.resetPassword(request)
+                _resetPasswordResult.postValue(Result.success(response))
+            } catch (e: Exception) {
+                _resetPasswordResult.postValue(Result.failure(e))
             } finally {
                 _isLoading.value = false
             }

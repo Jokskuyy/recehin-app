@@ -3,6 +3,7 @@ package com.example.recehin.data.repository
 import com.example.recehin.data.local.SessionManager
 import com.example.recehin.data.network.api.ApiService
 import com.example.recehin.data.network.request.*
+import com.example.recehin.data.network.response.GeneralResponse
 
 class AuthRepository(
     private val apiService: ApiService,
@@ -19,7 +20,9 @@ class AuthRepository(
     fun clearToken() {
         sessionManager.clearAuthToken()
     }
-
+    suspend fun resetPassword(request: ResetPasswordRequest): GeneralResponse {
+        return apiService.resetPassword(request)
+    }
     companion object {
         @Volatile
         private var instance: AuthRepository? = null

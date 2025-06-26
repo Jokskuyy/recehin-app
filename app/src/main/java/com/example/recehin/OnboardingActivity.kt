@@ -14,6 +14,7 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import com.example.recehin.ui.auth.HalamanLoginActivity
 import com.example.recehin.ui.auth.HalamanRegisterActivity
+import com.example.recehin.utils.BaseActivity
 
 
 class OnboardingActivity : BaseActivity() {

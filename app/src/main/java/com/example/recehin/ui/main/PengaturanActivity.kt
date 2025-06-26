@@ -4,7 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.viewModels
-import com.example.recehin.BaseActivity
+import com.example.recehin.utils.BaseActivity
 import com.example.recehin.databinding.ActivityPengaturanBinding // Menggunakan ViewBinding
 import com.example.recehin.ui.ViewModelFactory
 import com.example.recehin.ui.auth.AuthViewModel

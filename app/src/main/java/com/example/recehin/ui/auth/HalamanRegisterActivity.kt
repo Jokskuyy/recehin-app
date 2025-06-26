@@ -5,7 +5,7 @@ import android.os.Bundle
 import android.view.View
 import android.widget.Toast
 import androidx.activity.viewModels
-import com.example.recehin.BaseActivity
+import com.example.recehin.utils.BaseActivity
 import com.example.recehin.data.network.request.RegisterRequest
 import com.example.recehin.databinding.ActivityRegisterBinding // Ganti sesuai nama file layout Anda
 import com.example.recehin.ui.ViewModelFactory

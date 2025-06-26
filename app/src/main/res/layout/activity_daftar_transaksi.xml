@@ -112,9 +112,6 @@
                         android:layout_height="wrap_content"
                         android:nestedScrollingEnabled="false" />
 
-
-
-
                     <TextView
                         android:id="@+id/tv_empty_state"
                         android:layout_width="match_parent"
@@ -137,94 +134,7 @@
                     android:layout_marginBottom="24dp"
                     style="@style/Widget.MaterialComponents.Button.OutlinedButton" />
 
-                <!-- Analysis Section -->
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Analisis Keuangan"
-                    android:textSize="18sp"
-                    android:textColor="@color/colorTextPrimary"
-                    android:layout_marginBottom="16dp" />
-
-                <androidx.cardview.widget.CardView
-                    android:id="@+id/card_analisis"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="16dp"
-                    app:cardCornerRadius="8dp"
-                    app:cardElevation="4dp">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:padding="16dp">
-
-                        <TextView
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:text="Distribusi Pengeluaran (Bulan Ini)"
-                            android:textStyle="bold" />
-
-                        <!-- Placeholder for chart (in a real app this would be a ChartView) -->
-                        <ImageView
-                            android:layout_width="match_parent"
-                            android:layout_height="180dp"
-                            android:layout_marginTop="8dp"
-                            android:src="@android:drawable/ic_menu_gallery"
-                            android:background="@color/colorSurface"
-                            android:contentDescription="Grafik Analisis" />
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="horizontal"
-                            android:layout_marginTop="16dp">
-
-                            <LinearLayout
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                android:orientation="vertical">
-
-                                <TextView
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:text="Kategori Tertinggi"
-                                    android:textSize="12sp" />
-
-                                <TextView
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:text="Kebutuhan Pokok (45%)"
-                                    android:textStyle="bold"
-                                    android:textColor="@color/colorPrimary" />
-                            </LinearLayout>
-
-                            <LinearLayout
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                android:orientation="vertical">
-
-                                <TextView
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:text="Total Pengeluaran"
-                                    android:textSize="12sp" />
-
-                                <TextView
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:text="Rp 1,500,000"
-                                    android:textStyle="bold"
-                                    android:textColor="@color/colorError" />
-                            </LinearLayout>
-                        </LinearLayout>
-                    </LinearLayout>
-                </androidx.cardview.widget.CardView>
-
-
+                <!-- Bagian Analisis sudah dihapus -->
 
             </LinearLayout>
         </LinearLayout>
@@ -241,7 +151,13 @@
         android:src="@android:drawable/ic_input_add"
         app:backgroundTint="@color/colorPrimary"
         app:tint="@color/colorBackground"/>
-
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:visibility="gone"
+        tools:visibility="visible" />
     <!-- Bottom Navigation -->
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottom_navigation"

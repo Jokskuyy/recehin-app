@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="iv_category_icon" type="id" />
+    <item name="tv_artikel_title" type="id" />
+    <item name="tv_artikel_content" type="id" />
+    <item name="iv_artikel" type="id" />
+</resources>

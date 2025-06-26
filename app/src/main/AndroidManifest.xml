@@ -12,7 +12,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Recehin">
         <activity
-            android:name=".BaseActivity"
+            android:name=".utils.BaseActivity"
             android:exported="false" />
         <activity
             android:name=".SplashActivity"
@@ -32,6 +32,16 @@
         <activity android:name=".ui.main.DaftarTransaksiActivity" />
         <activity android:name=".ui.main.PengaturanActivity" />
         <activity android:name=".ui.main.ProfilActivity" />
+        <activity android:name=".ui.auth.HalamanResetPasswordActivity" />
+        <activity
+            android:name=".ui.artikel.ArtikelMenabungActivity"
+            android:label="Tips Menabung Efektif"
+            android:parentActivityName=".ui.main.BerandaActivity" />
+
+        <activity
+            android:name=".ui.artikel.ArtikelInvestasiActivity"
+            android:label="Panduan Investasi Pemula"
+            android:parentActivityName=".ui.main.BerandaActivity" />
     </application>
 
 </manifest>

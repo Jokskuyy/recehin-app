@@ -11,6 +11,7 @@ data class ForgotPasswordResponse(
 
     @field:SerializedName("data")
     val data: ResetTokenData?
+
 )
 
 data class ResetTokenData(

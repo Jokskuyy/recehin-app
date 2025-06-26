@@ -1,4 +1,4 @@
-package com.example.recehin
+package com.example.recehin.utils
 
 import android.os.Bundle
 import android.view.View

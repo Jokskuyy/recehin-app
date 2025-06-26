@@ -9,246 +9,247 @@ import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageButton
+import android.widget.ProgressBar
 import android.widget.RadioGroup
 import android.widget.Spinner
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.widget.SearchView
-import androidx.cardview.widget.CardView
+import androidx.appcompat.widget.SwitchCompat
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.recehin.R
+import com.example.recehin.data.di.Injection
+import com.example.recehin.data.network.request.AddBillRequest
+import com.example.recehin.data.network.response.Category
+import com.example.recehin.ui.DaftarTransaksiViewModel
+import com.example.recehin.ui.ViewModelFactory
+import com.example.recehin.utils.BaseActivity
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.bottomsheet.BottomSheetDialog
-import com.google.android.material.chip.Chip
-import com.google.android.material.chip.ChipGroup
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.tabs.TabLayout
 import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
-import android.view.ViewGroup
-import android.content.res.Resources
-import com.example.recehin.BaseActivity
-import com.example.recehin.R
+import java.util.*
 
 class DaftarTransaksiActivity : BaseActivity() {
 
     override fun shouldApplyBottomInset(): Boolean = false
 
+    private lateinit var viewModel: DaftarTransaksiViewModel
+    private lateinit var transaksiAdapter: TransaksiAdapter
+
     private lateinit var searchView: SearchView
-    private lateinit var chipGroupFilter: ChipGroup
     private lateinit var tabLayout: TabLayout
     private lateinit var recyclerViewTransaksi: RecyclerView
-    private lateinit var btnExport: Button
     private lateinit var fabTambahTransaksi: FloatingActionButton
     private lateinit var btnTagihanRutin: Button
-    private lateinit var containerAnalisis: CardView
     private lateinit var bottomNavigation: BottomNavigationView
+    private lateinit var tvEmptyState: TextView
+    private lateinit var progressBar: ProgressBar
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_daftar_transaksi)
-
         rootView = findViewById(R.id.root_layout)
 
-        // Initialize views
+        val factory = ViewModelFactory.getInstance(this)
+        viewModel = ViewModelProvider(this, factory)[DaftarTransaksiViewModel::class.java]
+
         initViews()
-
-        fabTambahTransaksi.post {
-            val root = findViewById<View>(android.R.id.content)
-            ViewCompat.setOnApplyWindowInsetsListener(root) { _, insets ->
-                val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-
-                val layoutParams = fabTambahTransaksi.layoutParams as ViewGroup.MarginLayoutParams
-                layoutParams.bottomMargin = systemBars.bottom + 66.dp // 16dp = your base margin
-                fabTambahTransaksi.layoutParams = layoutParams
-
-                insets
-            }
-
-            ViewCompat.requestApplyInsets(root)
-        }
-
-        // Setup UI interactions
+        setupRecyclerView()
         setupListeners()
-
-        // Setup bottom navigation
         setupBottomNavigation()
+        setupObservers()
 
-        // Load dummy data
-        loadDummyData()
+        viewModel.fetchInitialData()
     }
 
-    val Int.dp: Int
-        get() = (this * Resources.getSystem().displayMetrics.density).toInt()
-
-
     private fun initViews() {
-        // Find all views
-        searchView = findViewById(R.id.search_transaksi)
-        chipGroupFilter = findViewById(R.id.chipgroup_filter)
-        tabLayout = findViewById(R.id.tab_layout)
         recyclerViewTransaksi = findViewById(R.id.recyclerview_transaksi)
-        btnExport = findViewById(R.id.btn_export)
         fabTambahTransaksi = findViewById(R.id.fab_tambah_transaksi)
         btnTagihanRutin = findViewById(R.id.btn_tagihan_rutin)
-        containerAnalisis = findViewById(R.id.card_analisis)
         bottomNavigation = findViewById(R.id.bottom_navigation)
+        tvEmptyState = findViewById(R.id.tv_empty_state)
+        progressBar = findViewById(R.id.progressBar)
+        searchView = findViewById(R.id.search_transaksi)
+        tabLayout = findViewById(R.id.tab_layout)
+        findViewById<ImageButton>(R.id.btn_back).setOnClickListener { finish() }
+    }
 
-        // Setup RecyclerView (dummy adapter would be implemented in real app)
+    private fun setupRecyclerView() {
+        transaksiAdapter = TransaksiAdapter()
         recyclerViewTransaksi.layoutManager = LinearLayoutManager(this)
-        // In reality you would implement an adapter
+        recyclerViewTransaksi.adapter = transaksiAdapter
+    }
 
-        // Setup TabLayout
-        tabLayout.addTab(tabLayout.newTab().setText("Semua"))
-        tabLayout.addTab(tabLayout.newTab().setText("Pemasukan"))
-        tabLayout.addTab(tabLayout.newTab().setText("Pengeluaran"))
+    private fun setupObservers() {
+        viewModel.isLoading.observe(this) { progressBar.visibility = if (it) View.VISIBLE else View.GONE }
+        viewModel.toastMessage.observe(this) { if (!it.isNullOrEmpty()) Toast.makeText(this, it, Toast.LENGTH_SHORT).show() }
+
+        viewModel.displayedTransactions.observe(this) { transactions ->
+            if (transactions.isNullOrEmpty()) {
+                tvEmptyState.visibility = View.VISIBLE
+                recyclerViewTransaksi.visibility = View.GONE
+            } else {
+                tvEmptyState.visibility = View.GONE
+                recyclerViewTransaksi.visibility = View.VISIBLE
+                transaksiAdapter.submitList(transactions)
+            }
+        }
+
+        viewModel.addTransactionSuccess.observe(this) { if (it) viewModel.fetchTransactions() }
+        viewModel.addBillSuccess.observe(this) { if(it) viewModel.fetchBills() }
     }
 
     private fun setupListeners() {
-        // Back button click
-        findViewById<ImageButton>(R.id.btn_back).setOnClickListener {
-            finish()
-        }
+        fabTambahTransaksi.setOnClickListener { showInputTransaksiDialog() }
+        btnTagihanRutin.setOnClickListener { showTagihanRutinDialog() }
+        setupSearchListener()
+        setupTabListener()
+    }
 
-        // Filter chip clicks
-        setupFilterChips()
-
-        // Search functionality
+    private fun setupSearchListener() {
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
-                // Would filter transactions in a real app
-                Toast.makeText(this@DaftarTransaksiActivity, "Mencari: $query", Toast.LENGTH_SHORT).show()
-                return true
+                viewModel.setSearchKeyword(query)
+                return false
             }
 
             override fun onQueryTextChange(newText: String?): Boolean {
-                // Real-time filtering would happen here
+                viewModel.setSearchKeyword(newText)
                 return true
             }
         })
-
-        // Export button
-        btnExport.setOnClickListener {
-            showExportDialog()
-        }
-
-        // FAB for adding transaction
-        fabTambahTransaksi.setOnClickListener {
-            showInputTransaksiDialog()
-        }
-
-        // Routine bills button
-        btnTagihanRutin.setOnClickListener {
-            showTagihanRutinDialog()
-        }
-
-        // Analysis section
-        containerAnalisis.setOnClickListener {
-            // In a real app, this might navigate to a detailed analysis screen
-            Toast.makeText(this, "Membuka analisis keuangan detail", Toast.LENGTH_SHORT).show()
-        }
     }
 
-    private fun setupFilterChips() {
-        // Add filter options
-        val filterOptions = listOf("Hari ini", "Minggu ini", "Bulan ini", "Kustom")
+    private fun setupTabListener() {
+        tabLayout.removeAllTabs()
+        tabLayout.addTab(tabLayout.newTab().setText("Semua"))
+        tabLayout.addTab(tabLayout.newTab().setText("Pemasukan"))
+        tabLayout.addTab(tabLayout.newTab().setText("Pengeluaran"))
 
-        for (option in filterOptions) {
-            val chip = Chip(this).apply {
-                text = option
-                isCheckable = true
-                isClickable = true
-            }
-
-            chip.setOnClickListener {
-                if (option == "Kustom") {
-                    showDateRangePickerDialog()
-                } else {
-                    Toast.makeText(this@DaftarTransaksiActivity, "Filter: $option", Toast.LENGTH_SHORT).show()
+        tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
+            override fun onTabSelected(tab: TabLayout.Tab?) {
+                when (tab?.position) {
+                    0 -> viewModel.setFilterType(null)
+                    1 -> viewModel.setFilterType("income")
+                    2 -> viewModel.setFilterType("expense")
                 }
             }
-
-            chipGroupFilter.addView(chip)
-        }
+            override fun onTabUnselected(tab: TabLayout.Tab?) {}
+            override fun onTabReselected(tab: TabLayout.Tab?) {}
+        })
     }
 
-    private fun setupBottomNavigation() {
-        bottomNavigation.setOnItemSelectedListener { item ->
-            when (item.itemId) {
-                R.id.nav_home -> {
-                    startActivity(Intent(this, BerandaActivity::class.java))
-                    true
-                }
-                R.id.nav_transaksi -> {
-                    // Already on this screen
-                    true
-                }
-//                R.id.nav_analisis -> {
-//                    // Navigate to analysis (in a real app)
-//                    Toast.makeText(this, "Navigasi ke Analisis", Toast.LENGTH_SHORT).show()
-//                    true
-//                }
-                R.id.nav_pengaturan -> {
-                    startActivity(Intent(this, PengaturanActivity::class.java))
-                    true
-                }
-                else -> false
-            }
+    private fun showTagihanRutinDialog() {
+        val bottomSheetDialog = BottomSheetDialog(this)
+        val view = LayoutInflater.from(this).inflate(R.layout.dialog_tagihan_rutin, null)
+        bottomSheetDialog.setContentView(view)
+
+        val rvTagihan = view.findViewById<RecyclerView>(R.id.recyclerview_tagihan)
+        val btnTambahTagihan = view.findViewById<Button>(R.id.btn_tambah_tagihan)
+        val tagihanAdapter = TagihanAdapter()
+
+        rvTagihan.layoutManager = LinearLayoutManager(this)
+        rvTagihan.adapter = tagihanAdapter
+
+        viewModel.bills.observe(this) { bills ->
+            tagihanAdapter.submitList(bills)
         }
 
-        // Set the transactions tab as selected
-        bottomNavigation.selectedItemId = R.id.nav_transaksi
-    }
-
-    private fun loadDummyData() {
-        val dummyList = listOf("Gaji", "Makan", "Transportasi", "Investasi", "Hiburan")
-        val adapter = TransaksiAdapter(dummyList)
-        recyclerViewTransaksi.adapter = adapter
-    }
-
-    private fun showDateRangePickerDialog() {
-        val dateRangePicker = MaterialDatePicker.Builder.dateRangePicker()
-            .setTitleText("Pilih Rentang Tanggal")
-            .build()
-
-        dateRangePicker.addOnPositiveButtonClickListener { selection ->
-            val startDate = Date(selection.first)
-            val endDate = Date(selection.second)
-            val dateFormat = SimpleDateFormat("dd MMM yyyy", Locale("id"))
-
-            Toast.makeText(
-                this,
-                "Filter: ${dateFormat.format(startDate)} - ${dateFormat.format(endDate)}",
-                Toast.LENGTH_SHORT
-            ).show()
+        btnTambahTagihan.setOnClickListener {
+            bottomSheetDialog.dismiss()
+            showTambahTagihanDialog()
         }
 
-        dateRangePicker.show(supportFragmentManager, "DATE_RANGE_PICKER")
+        bottomSheetDialog.show()
     }
 
-    private fun showExportDialog() {
+    private fun showTambahTagihanDialog() {
+        val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_tambah_tagihan, null)
         val dialog = AlertDialog.Builder(this)
-            .setTitle("Ekspor Data Transaksi")
-            .setItems(arrayOf("Ekspor ke PDF", "Ekspor ke Excel")) { _, which ->
-                val format = if (which == 0) "PDF" else "Excel"
-                Toast.makeText(this, "Mengekspor transaksi ke $format", Toast.LENGTH_SHORT).show()
-            }
-            .setNegativeButton("Batal") { dialog, _ ->
-                dialog.dismiss()
-            }
+            .setView(dialogView)
+            .setTitle("Tambah Tagihan Rutin")
+            .setPositiveButton("Simpan", null)
+            .setNegativeButton("Batal", null)
             .create()
 
+        val etNama = dialogView.findViewById<EditText>(R.id.et_nama_tagihan)
+        val etJumlah = dialogView.findViewById<EditText>(R.id.et_jumlah_tagihan)
+        val spinnerFrekuensi = dialogView.findViewById<Spinner>(R.id.spinner_frekuensi)
+        val spinnerKategori = dialogView.findViewById<Spinner>(R.id.spinner_kategori_tagihan)
+        val btnPilihTanggal = dialogView.findViewById<Button>(R.id.btn_pilih_tanggal_tagihan)
+        val switchNotifikasi = dialogView.findViewById<SwitchCompat>(R.id.switch_notifikasi)
+
+        val frekuensiOptions = arrayOf("Harian", "Mingguan", "Bulanan", "Tahunan")
+        spinnerFrekuensi.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, frekuensiOptions)
+
+        var expenseCategories: List<Category> = emptyList()
+        viewModel.expenseCategories.observe(this) { categories ->
+            expenseCategories = categories
+            spinnerKategori.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, categories.map { it.name })
+        }
+
+        var selectedDate = Date()
+        val apiDateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        btnPilihTanggal.text = apiDateFormat.format(selectedDate)
+        btnPilihTanggal.setOnClickListener {
+            val datePicker = MaterialDatePicker.Builder.datePicker().build()
+            datePicker.addOnPositiveButtonClickListener {
+                val calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
+                calendar.timeInMillis = it
+                selectedDate = calendar.time
+                btnPilihTanggal.text = apiDateFormat.format(selectedDate)
+            }
+            datePicker.show(supportFragmentManager, "DATE_PICKER_BILL")
+        }
+
+        dialog.setOnShowListener {
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                val name = etNama.text.toString()
+                val amountStr = etJumlah.text.toString()
+
+                if (name.isEmpty() || amountStr.isEmpty()) {
+                    Toast.makeText(this, "Nama dan Jumlah harus diisi", Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
+                }
+
+                val selectedCategoryName = spinnerKategori.selectedItem?.toString()
+                if (selectedCategoryName == null) {
+                    Toast.makeText(this, "Pilih kategori terlebih dahulu", Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
+                }
+
+                val category = expenseCategories.find { it.name == selectedCategoryName }
+                if (category == null) {
+                    Toast.makeText(this, "Kategori tidak valid", Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
+                }
+
+                val request = AddBillRequest(
+                    name = name,
+                    amount = amountStr.toDouble(),
+                    categoryId = category.id,
+                    nextDueDate =  apiDateFormat.format(selectedDate),
+                    frequency = spinnerFrekuensi.selectedItem.toString().lowercase(Locale.getDefault()),
+                    notification = switchNotifikasi.isChecked
+                )
+
+                viewModel.addBill(request)
+                dialog.dismiss()
+            }
+        }
         dialog.show()
     }
 
     private fun showInputTransaksiDialog() {
         val bottomSheetDialog = BottomSheetDialog(this)
         val view = LayoutInflater.from(this).inflate(R.layout.dialog_input_transaksi, null)
+        bottomSheetDialog.setContentView(view)
 
-        // Setup view elements
         val radioGroupTipe = view.findViewById<RadioGroup>(R.id.radio_group_tipe)
         val spinnerKategori = view.findViewById<Spinner>(R.id.spinner_kategori)
         val editTextJumlah = view.findViewById<EditText>(R.id.et_jumlah)
@@ -257,164 +258,94 @@ class DaftarTransaksiActivity : BaseActivity() {
         val btnSimpan = view.findViewById<Button>(R.id.btn_simpan)
         val btnBatal = view.findViewById<Button>(R.id.btn_batal)
 
-        // Setup date picker
-        var selectedDateInMillis = System.currentTimeMillis()
-        val dateFormat = SimpleDateFormat("dd MMMM yyyy", Locale("id"))
-        btnPilihTanggal.text = dateFormat.format(Date(selectedDateInMillis))
+        btnBatal.setOnClickListener { bottomSheetDialog.dismiss() }
+
+        var selectedDate = Date()
+        val apiDateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        val displayDateFormat = SimpleDateFormat("dd MMMM yy", Locale("id", "ID"))
+        btnPilihTanggal.text = displayDateFormat.format(selectedDate)
 
         btnPilihTanggal.setOnClickListener {
             val datePicker = MaterialDatePicker.Builder.datePicker()
-                .setTitleText("Pilih Tanggal Transaksi")
-                .setSelection(selectedDateInMillis)
+                .setTitleText("Pilih Tanggal")
+                .setSelection(selectedDate.time)
                 .build()
-
-            datePicker.addOnPositiveButtonClickListener { dateInMillis ->
-                selectedDateInMillis = dateInMillis
-                btnPilihTanggal.text = dateFormat.format(Date(dateInMillis))
+            datePicker.addOnPositiveButtonClickListener { timeInMillis ->
+                val calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
+                calendar.timeInMillis = timeInMillis
+                selectedDate = calendar.time
+                btnPilihTanggal.text = displayDateFormat.format(selectedDate)
             }
-
             datePicker.show(supportFragmentManager, "DATE_PICKER")
         }
 
-        // Setup category spinner based on transaction type
-        radioGroupTipe.setOnCheckedChangeListener { _, checkedId ->
-            val categories = if (checkedId == R.id.radio_pemasukan) {
-                arrayOf("Gaji", "Bonus", "THR", "Hadiah", "Investasi", "Lainnya")
-            } else {
-                arrayOf("Kebutuhan Pokok", "Transportasi", "Hiburan", "Kesehatan", "Pendidikan", "Lainnya")
-            }
-
-            val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, categories)
+        var currentCategories: List<Category> = emptyList()
+        val setupSpinner: (List<Category>?) -> Unit = { categories ->
+            currentCategories = categories ?: emptyList()
+            val categoryNames = currentCategories.map { it.name }
+            val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, categoryNames)
             spinnerKategori.adapter = adapter
         }
 
-        // Set default to "Pengeluaran" categories
+        radioGroupTipe.setOnCheckedChangeListener { _, checkedId ->
+            if (checkedId == R.id.radio_pemasukan) {
+                setupSpinner(viewModel.incomeCategories.value)
+            } else {
+                setupSpinner(viewModel.expenseCategories.value)
+            }
+        }
+
+        viewModel.expenseCategories.observe(this) { categories ->
+            if (radioGroupTipe.checkedRadioButtonId == R.id.radio_pengeluaran) {
+                setupSpinner(categories)
+            }
+        }
+        viewModel.incomeCategories.observe(this) { categories ->
+            if (radioGroupTipe.checkedRadioButtonId == R.id.radio_pemasukan) {
+                setupSpinner(categories)
+            }
+        }
         radioGroupTipe.check(R.id.radio_pengeluaran)
 
-        // Handle save button
         btnSimpan.setOnClickListener {
-            val tipe = if (radioGroupTipe.checkedRadioButtonId == R.id.radio_pemasukan)
-                "Pemasukan" else "Pengeluaran"
-            val kategori = spinnerKategori.selectedItem.toString()
-            val jumlah = editTextJumlah.text.toString()
-            val keterangan = editTextKeterangan.text.toString()
-            val tanggal = btnPilihTanggal.text.toString()
-
-            if (jumlah.isEmpty()) {
-                editTextJumlah.error = "Jumlah harus diisi"
+            val amountStr = editTextJumlah.text.toString()
+            if (amountStr.isEmpty()) {
+                editTextJumlah.error = "Jumlah tidak boleh kosong"
                 return@setOnClickListener
             }
-
-            Toast.makeText(
-                this,
-                "Transaksi $tipe: Rp$jumlah untuk $kategori pada $tanggal berhasil disimpan",
-                Toast.LENGTH_LONG
-            ).show()
-
+            if (spinnerKategori.selectedItem == null) {
+                Toast.makeText(this, "Kategori belum dimuat", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            val amount = amountStr.toDouble()
+            val description = editTextKeterangan.text.toString().ifEmpty { null }
+            val selectedCategoryName = spinnerKategori.selectedItem.toString()
+            val selectedCategory = currentCategories.find { it.name == selectedCategoryName }
+            if (selectedCategory == null) {
+                Toast.makeText(this, "Kategori tidak valid", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            viewModel.addTransaction(
+                amount,
+                selectedCategory.id,
+                description,
+                apiDateFormat.format(selectedDate)
+            )
             bottomSheetDialog.dismiss()
-
-            // In a real app, you would save this data to a database
-            // and refresh the transactions list
         }
 
-        btnBatal.setOnClickListener {
-            bottomSheetDialog.dismiss()
-        }
-
-        bottomSheetDialog.setContentView(view)
         bottomSheetDialog.show()
     }
 
-    private fun showTagihanRutinDialog() {
-        val bottomSheetDialog = BottomSheetDialog(this)
-        val view = LayoutInflater.from(this).inflate(R.layout.dialog_tagihan_rutin, null)
-
-        // Setup UI elements
-        val recyclerViewTagihan = view.findViewById<RecyclerView>(R.id.recyclerview_tagihan)
-        val btnTambahTagihan = view.findViewById<Button>(R.id.btn_tambah_tagihan)
-
-        // Setup RecyclerView (dummy implementation)
-        recyclerViewTagihan.layoutManager = LinearLayoutManager(this)
-        // Would use a real adapter in production
-
-        // Add tagihan button
-        btnTambahTagihan.setOnClickListener {
-            bottomSheetDialog.dismiss()
-            showTambahTagihanDialog()
+    private fun setupBottomNavigation() {
+        bottomNavigation.selectedItemId = R.id.nav_transaksi
+        bottomNavigation.setOnItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.nav_home -> { startActivity(Intent(this, BerandaActivity::class.java)); true }
+                R.id.nav_transaksi -> true
+                R.id.nav_pengaturan -> { startActivity(Intent(this, PengaturanActivity::class.java)); true }
+                else -> false
+            }
         }
-
-        bottomSheetDialog.setContentView(view)
-        bottomSheetDialog.show()
-    }
-
-    private fun showTambahTagihanDialog() {
-        val dialog = AlertDialog.Builder(this)
-        val view = LayoutInflater.from(this).inflate(R.layout.dialog_tambah_tagihan, null)
-
-        // Setup UI elements
-        val editTextNama = view.findViewById<EditText>(R.id.et_nama_tagihan)
-        val editTextJumlah = view.findViewById<EditText>(R.id.et_jumlah_tagihan)
-        val spinnerFrekuensi = view.findViewById<Spinner>(R.id.spinner_frekuensi)
-        val spinnerKategori = view.findViewById<Spinner>(R.id.spinner_kategori_tagihan)
-        val btnPilihTanggal = view.findViewById<Button>(R.id.btn_pilih_tanggal_tagihan)
-        val switchNotifikasi = view.findViewById<androidx.appcompat.widget.SwitchCompat>(R.id.switch_notifikasi)
-
-        // Setup date selection
-        var selectedDateInMillis = System.currentTimeMillis()
-        val dateFormat = SimpleDateFormat("dd MMMM yyyy", Locale("id"))
-        btnPilihTanggal.text = dateFormat.format(Date(selectedDateInMillis))
-
-        btnPilihTanggal.setOnClickListener {
-            val datePicker = MaterialDatePicker.Builder.datePicker()
-                .setTitleText("Pilih Tanggal Jatuh Tempo")
-                .setSelection(selectedDateInMillis)
-                .build()
-
-            datePicker.addOnPositiveButtonClickListener { dateInMillis ->
-                selectedDateInMillis = dateInMillis
-                btnPilihTanggal.text = dateFormat.format(Date(dateInMillis))
-            }
-
-            datePicker.show(supportFragmentManager, "DATE_PICKER")
-        }
-
-        // Setup spinners
-        val frekuensiAdapter = ArrayAdapter(
-            this,
-            android.R.layout.simple_spinner_dropdown_item,
-            arrayOf("Harian", "Mingguan", "Bulanan", "Tahunan")
-        )
-        spinnerFrekuensi.adapter = frekuensiAdapter
-
-        val kategoriAdapter = ArrayAdapter(
-            this,
-            android.R.layout.simple_spinner_dropdown_item,
-            arrayOf("Kebutuhan Pokok", "Transportasi", "Hiburan", "Kesehatan", "Pendidikan", "Lainnya")
-        )
-        spinnerKategori.adapter = kategoriAdapter
-
-        dialog.setView(view)
-            .setTitle("Tambah Tagihan Rutin")
-            .setPositiveButton("Simpan") { _, _ ->
-                val nama = editTextNama.text.toString()
-                val jumlah = editTextJumlah.text.toString()
-                val frekuensi = spinnerFrekuensi.selectedItem.toString()
-                val kategori = spinnerKategori.selectedItem.toString()
-                val tanggal = btnPilihTanggal.text.toString()
-                val notifikasi = if (switchNotifikasi.isChecked) "aktif" else "tidak aktif"
-
-                Toast.makeText(
-                    this,
-                    "Tagihan $nama sebesar Rp$jumlah ($frekuensi) berhasil disimpan dengan notifikasi $notifikasi",
-                    Toast.LENGTH_LONG
-                ).show()
-
-                // In a real app, you would save to a database
-            }
-            .setNegativeButton("Batal") { dialog, _ ->
-                dialog.dismiss()
-            }
-            .create()
-            .show()
     }
 }

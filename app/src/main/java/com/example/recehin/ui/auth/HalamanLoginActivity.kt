@@ -5,8 +5,7 @@ import android.os.Bundle
 import android.view.View
 import android.widget.Toast
 import androidx.activity.viewModels
-import androidx.appcompat.app.AppCompatActivity
-import com.example.recehin.BaseActivity
+import com.example.recehin.utils.BaseActivity
 import com.example.recehin.data.network.request.LoginRequest
 import com.example.recehin.databinding.ActivityLoginBinding
 import com.example.recehin.ui.ViewModelFactory
