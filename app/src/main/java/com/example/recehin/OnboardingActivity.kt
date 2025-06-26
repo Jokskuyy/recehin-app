@@ -12,6 +12,8 @@ import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import com.example.recehin.ui.auth.HalamanLoginActivity
+import com.example.recehin.ui.auth.HalamanRegisterActivity
 
 
 class OnboardingActivity : BaseActivity() {
