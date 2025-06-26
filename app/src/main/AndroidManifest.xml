@@ -2,8 +2,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     package="com.example.recehin">
-
+    <uses-permission android:name="android.permission.INTERNET" />
     <application
+        android:usesCleartextTraffic="true"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -24,13 +25,13 @@
             </intent-filter>
         </activity>
         <activity android:name=".OnboardingActivity" />
-        <activity android:name=".HalamanLoginActivity" />
-        <activity android:name=".HalamanRegisterActivity" />
-        <activity android:name=".HalamanLupaPasswordActivity" />
-        <activity android:name=".BerandaActivity" />
-        <activity android:name=".DaftarTransaksiActivity" />
-        <activity android:name=".PengaturanActivity" />
-        <activity android:name=".ProfilActivity" />
+        <activity android:name=".ui.auth.HalamanLoginActivity" />
+        <activity android:name=".ui.auth.HalamanRegisterActivity" />
+        <activity android:name=".ui.auth.HalamanLupaPasswordActivity" />
+        <activity android:name=".ui.main.BerandaActivity" />
+        <activity android:name=".ui.main.DaftarTransaksiActivity" />
+        <activity android:name=".ui.main.PengaturanActivity" />
+        <activity android:name=".ui.main.ProfilActivity" />
     </application>
 
 </manifest>
