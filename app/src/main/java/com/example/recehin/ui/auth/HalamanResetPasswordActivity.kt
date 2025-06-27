@@ -26,6 +26,11 @@ class HalamanResetPasswordActivity : BaseActivity() {
     }
 
     private fun setupListeners() {
+
+        binding.ibBack.setOnClickListener {
+            onBackPressedDispatcher.onBackPressed()
+        }
+
         binding.btnSavePassword.setOnClickListener {
             val token = binding.etToken.text.toString().trim()
             val newPassword = binding.etNewPassword.text.toString()

@@ -48,13 +48,6 @@
         android:layout_marginBottom="@dimen/padding_medium">
 
         <Switch
-            android:id="@+id/switchDarkMode"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Mode Gelap"
-            android:layout_marginBottom="@dimen/padding_small"/>
-
-        <Switch
             android:id="@+id/switchNotifikasi"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

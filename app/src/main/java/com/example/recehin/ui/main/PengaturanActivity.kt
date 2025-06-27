@@ -10,6 +10,7 @@ import com.example.recehin.ui.ViewModelFactory
 import com.example.recehin.ui.auth.AuthViewModel
 import com.example.recehin.ui.auth.HalamanLoginActivity
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.example.recehin.ui.auth.HalamanResetPasswordActivity
 
 class PengaturanActivity : BaseActivity() {
 
@@ -36,6 +37,12 @@ class PengaturanActivity : BaseActivity() {
         // Listener untuk tombol keluar
         binding.btnKeluarAkun.setOnClickListener {
             showLogoutConfirmationDialog()
+        }
+
+        // 🔐 Tombol untuk ubah kata sandi
+        binding.btnUbahKataSandi.setOnClickListener {
+            val intent = Intent(this, HalamanResetPasswordActivity::class.java)
+            startActivity(intent)
         }
     }
 
