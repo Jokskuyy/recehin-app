@@ -20,7 +20,7 @@ recehin-app/
 - **Backend:**
   - Node.js (v14 or higher)
   - npm
-  - MongoDB (local or cloud instance)
+  - MySQL Server (local or cloud instance)
 - **Frontend:**
   - Android Studio
   - Android SDK
@@ -34,8 +34,9 @@ recehin-app/
    ```bash
    npm install
    ```
-3. Configure environment variables as needed (e.g., MongoDB URI).
-4. Start the backend server:
+3. Make sure MySQL server is running and create a database for the project.
+4. Configure environment variables as needed (e.g., MySQL connection settings in `config/database.js`).
+5. Start the backend server:
    ```bash
    npm start
    ```
